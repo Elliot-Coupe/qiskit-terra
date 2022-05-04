@@ -119,7 +119,7 @@ def level_2_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
             min_qubits=3,
             plugin_config=unitary_synthesis_plugin_config,
         ),
-        Unroll3qOrMore(),
+        Unroll3qOrMore(target=target, basis_gates=basis_gates),
     ]
 
     # 2. Search for a perfect layout, or choose a dense layout, if no layout given
@@ -233,7 +233,7 @@ def level_2_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
                 plugin_config=unitary_synthesis_plugin_config,
                 min_qubits=3,
             ),
-            Unroll3qOrMore(),
+            Unroll3qOrMore(target=target, basis_gates=basis_gates),
             Collect2qBlocks(),
             ConsolidateBlocks(basis_gates=basis_gates, target=target),
             UnitarySynthesis(

@@ -170,7 +170,7 @@ def level_1_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
             min_qubits=3,
             plugin_config=unitary_synthesis_plugin_config,
         ),
-        Unroll3qOrMore(),
+        Unroll3qOrMore(target=target, basis_gates=basis_gates),
     ]
 
     # 3. Use a better layout on densely connected qubits, if circuit needs swaps
@@ -248,7 +248,7 @@ def level_1_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
                 backend_props=backend_properties,
                 min_qubits=3,
             ),
-            Unroll3qOrMore(),
+            Unroll3qOrMore(target=target, basis_gates=basis_gates),
             Collect2qBlocks(),
             ConsolidateBlocks(basis_gates=basis_gates, target=target),
             UnitarySynthesis(
