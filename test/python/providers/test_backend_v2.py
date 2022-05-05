@@ -22,8 +22,13 @@ from ddt import ddt, data
 from qiskit.circuit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit.compiler import transpile
 from qiskit.test.base import QiskitTestCase
-from qiskit.test.mock.fake_backend_v2 import FakeBackendV2, FakeBackend5QV2
-from qiskit.test.mock.fake_mumbai_v2 import FakeMumbaiV2
+from qiskit.test.mock.fake_backend_v2 import (
+    FakeBackendV2,
+    FakeBackend5QV2,
+    FakeBackendSimple,
+    FakeBackendV2LegacyQubitProps,
+)
+from qiskit.test.mock.fake_mumbai_v2 import FakeMumbaiFractionalCX
 from qiskit.quantum_info import Operator
 
 
@@ -50,6 +55,18 @@ class TestBackendV2(QiskitTestCase):
         self.assertEqual([73.09352e-6, 63.48783e-6], [x.t1 for x in props])
         self.assertEqual([126.83382e-6, 112.23246e-6], [x.t2 for x in props])
         self.assertEqual([5.26722e9, 5.17538e9], [x.frequency for x in props])
+
+    def test_legacy_qubit_properties(self):
+        """Test that qubit props work for backends not using properties in target."""
+        props = FakeBackendV2LegacyQubitProps().qubit_properties([1, 0])
+        self.assertEqual([73.09352e-6, 63.48783e-6], [x.t1 for x in props])
+        self.assertEqual([126.83382e-6, 112.23246e-6], [x.t2 for x in props])
+        self.assertEqual([5.26722e9, 5.17538e9], [x.frequency for x in props])
+
+    def test_no_qubit_properties_raises(self):
+        """Ensure that if no qubit properties are defined we raise correctly."""
+        with self.assertRaises(NotImplementedError):
+            FakeBackendSimple().qubit_properties(0)
 
     def test_option_bounds(self):
         """Test that option bounds are enforced."""
@@ -147,7 +164,7 @@ class TestBackendV2(QiskitTestCase):
 
     def test_transpile_mumbai_target(self):
         """Test that transpile respects a more involved target for a fake mumbai."""
-        backend = FakeMumbaiV2()
+        backend = FakeMumbaiFractionalCX()
         qc = QuantumCircuit(2)
         qc.h(0)
         qc.cx(1, 0)

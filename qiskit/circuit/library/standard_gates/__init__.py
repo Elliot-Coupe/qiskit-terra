@@ -50,7 +50,8 @@ Standard gates (:mod:`qiskit.circuit.library.standard_gates`)
    RZGate
    RZZGate
    RZXGate
-   XYGate
+   XXMinusYYGate
+   XXPlusYYGate
    ECRGate
    SGate
    SdgGate
@@ -82,7 +83,8 @@ from .ryy import RYYGate
 from .rz import RZGate, CRZGate
 from .rzz import RZZGate
 from .rzx import RZXGate
-from .xy import XYGate
+from .xx_minus_yy import XXMinusYYGate
+from .xx_plus_yy import XXPlusYYGate
 from .ecr import ECRGate
 from .s import SGate, SdgGate
 from .swap import SwapGate, CSwapGate

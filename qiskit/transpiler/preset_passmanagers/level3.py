@@ -42,6 +42,7 @@ from qiskit.transpiler.passes import FullAncillaAllocation
 from qiskit.transpiler.passes import EnlargeWithAncilla
 from qiskit.transpiler.passes import FixedPoint
 from qiskit.transpiler.passes import Depth
+from qiskit.transpiler.passes import Size
 from qiskit.transpiler.passes import RemoveResetInZeroState
 from qiskit.transpiler.passes import Optimize1qGatesDecomposition
 from qiskit.transpiler.passes import CommutativeCancellation
@@ -54,9 +55,10 @@ from qiskit.transpiler.passes import ApplyLayout
 from qiskit.transpiler.passes import Layout2qDistance
 from qiskit.transpiler.passes import CheckGateDirection
 from qiskit.transpiler.passes import TimeUnitConversion
-from qiskit.transpiler.passes import ALAPSchedule
-from qiskit.transpiler.passes import ASAPSchedule
-from qiskit.transpiler.passes import AlignMeasures
+from qiskit.transpiler.passes import ALAPScheduleAnalysis
+from qiskit.transpiler.passes import ASAPScheduleAnalysis
+from qiskit.transpiler.passes import ConstrainedReschedule
+from qiskit.transpiler.passes import InstructionDurationCheck
 from qiskit.transpiler.passes import ValidatePulseGates
 from qiskit.transpiler.passes import PulseGates
 from qiskit.transpiler.passes import Error
@@ -118,6 +120,7 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
             method=unitary_synthesis_method,
             plugin_config=unitary_synthesis_plugin_config,
             min_qubits=3,
+            target=target,
         ),
         Unroll3qOrMore(),
     ]
@@ -146,10 +149,14 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
     _choose_layout_0 = (
         []
         if pass_manager_config.layout_method
-        else [
-            TrivialLayout(coupling_map),
-            Layout2qDistance(coupling_map, property_name="trivial_layout_score"),
-        ]
+        else VF2Layout(
+            coupling_map,
+            seed=seed_transpiler,
+            call_limit=int(3e7),  # Set call limit to ~60 sec with retworkx 0.10.2
+            time_limit=60,
+            properties=backend_properties,
+            target=target,
+        )
     )
     # 2b. If trivial layout wasn't perfect (ie no swaps are needed) then try
     # using CSP layout to find a perfect layout
@@ -172,7 +179,7 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
     if layout_method == "trivial":
         _choose_layout_2 = TrivialLayout(coupling_map)
     elif layout_method == "dense":
-        _choose_layout_2 = DenseLayout(coupling_map, backend_properties)
+        _choose_layout_1 = DenseLayout(coupling_map, backend_properties, target=target)
     elif layout_method == "noise_adaptive":
         _choose_layout_2 = NoiseAdaptiveLayout(backend_properties)
     elif layout_method == "sabre":
@@ -225,6 +232,7 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
                 backend_props=backend_properties,
                 plugin_config=unitary_synthesis_plugin_config,
                 method=unitary_synthesis_method,
+                target=target,
             ),
             UnrollCustomDefinitions(sel, basis_gates),
             BasisTranslator(sel, basis_gates, target),
@@ -239,6 +247,7 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
                 method=unitary_synthesis_method,
                 plugin_config=unitary_synthesis_plugin_config,
                 min_qubits=3,
+                target=target,
             ),
             Unroll3qOrMore(),
             Collect2qBlocks(),
@@ -250,6 +259,7 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
                 backend_props=backend_properties,
                 method=unitary_synthesis_method,
                 plugin_config=unitary_synthesis_plugin_config,
+                target=target,
             ),
         ]
     else:
@@ -266,9 +276,10 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
     # 8. Optimize iteratively until no more change in depth. Removes useless gates
     # after reset and before measure, commutes gates and optimizes contiguous blocks.
     _depth_check = [Depth(), FixedPoint("depth")]
+    _size_check = [Size(), FixedPoint("size")]
 
     def _opt_control(property_set):
-        return not property_set["depth_fixed_point"]
+        return (not property_set["depth_fixed_point"]) or (not property_set["size_fixed_point"])
 
     _reset = [RemoveResetInZeroState()]
 
@@ -284,43 +295,11 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
             backend_props=backend_properties,
             method=unitary_synthesis_method,
             plugin_config=unitary_synthesis_plugin_config,
+            target=target,
         ),
         Optimize1qGatesDecomposition(basis_gates),
         CommutativeCancellation(),
     ]
-
-    # 9. Unify all durations (either SI, or convert to dt if known)
-    # Schedule the circuit only when scheduling_method is supplied
-    _time_unit_setup = [ContainsInstruction("delay")]
-    _time_unit_conversion = [TimeUnitConversion(instruction_durations)]
-
-    def _contains_delay(property_set):
-        return property_set["contains_delay"]
-
-    _scheduling = []
-    if scheduling_method:
-        _scheduling += _time_unit_conversion
-        if scheduling_method in {"alap", "as_late_as_possible"}:
-            _scheduling += [ALAPSchedule(instruction_durations)]
-        elif scheduling_method in {"asap", "as_soon_as_possible"}:
-            _scheduling += [ASAPSchedule(instruction_durations)]
-        else:
-            raise TranspilerError("Invalid scheduling method %s." % scheduling_method)
-
-    # 10. Call measure alignment. Should come after scheduling.
-    if (
-        timing_constraints.granularity != 1
-        or timing_constraints.min_length != 1
-        or timing_constraints.acquire_alignment != 1
-    ):
-        _alignments = [
-            ValidatePulseGates(
-                granularity=timing_constraints.granularity, min_length=timing_constraints.min_length
-            ),
-            AlignMeasures(alignment=timing_constraints.acquire_alignment),
-        ]
-    else:
-        _alignments = []
 
     # Build pass manager
     pm3 = PassManager()
@@ -341,24 +320,79 @@ def level_3_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
         pm3.append(_direction_check)
         pm3.append(_direction, condition=_direction_condition)
         pm3.append(_reset)
+        pm3.append(_depth_check + _size_check)
         # For transpiling to a target we need to run GateDirection in the
         # optimization loop to correct for incorrect directions that might be
         # inserted by UnitarySynthesis which is direction aware but only via
         # the coupling map which with a target doesn't give a full picture
         if target is not None:
-            pm3.append(_depth_check + _opt + _unroll + _direction, do_while=_opt_control)
+            pm3.append(
+                _opt + _unroll + _depth_check + _size_check + _direction, do_while=_opt_control
+            )
         else:
-            pm3.append(_depth_check + _opt + _unroll, do_while=_opt_control)
+            pm3.append(_opt + _unroll + _depth_check + _size_check, do_while=_opt_control)
     else:
         pm3.append(_reset)
-        pm3.append(_depth_check + _opt + _unroll, do_while=_opt_control)
+        pm3.append(_depth_check + _size_check)
+        pm3.append(_opt + _unroll + _depth_check + _size_check, do_while=_opt_control)
     if inst_map and inst_map.has_custom_gate():
         pm3.append(PulseGates(inst_map=inst_map))
+
+    # 9. Unify all durations (either SI, or convert to dt if known)
+    # Schedule the circuit only when scheduling_method is supplied
+    # Apply alignment analysis regardless of scheduling for delay validation.
     if scheduling_method:
-        pm3.append(_scheduling)
+        # Do scheduling after unit conversion.
+        scheduler = {
+            "alap": ALAPScheduleAnalysis,
+            "as_late_as_possible": ALAPScheduleAnalysis,
+            "asap": ASAPScheduleAnalysis,
+            "as_soon_as_possible": ASAPScheduleAnalysis,
+        }
+        pm3.append(TimeUnitConversion(instruction_durations))
+        try:
+            pm3.append(scheduler[scheduling_method](instruction_durations))
+        except KeyError as ex:
+            raise TranspilerError("Invalid scheduling method %s." % scheduling_method) from ex
     elif instruction_durations:
-        pm3.append(_time_unit_setup)
-        pm3.append(_time_unit_conversion, condition=_contains_delay)
-    pm3.append(_alignments)
+        # No scheduling. But do unit conversion for delays.
+        def _contains_delay(property_set):
+            return property_set["contains_delay"]
+
+        pm3.append(ContainsInstruction("delay"))
+        pm3.append(TimeUnitConversion(instruction_durations), condition=_contains_delay)
+    if (
+        timing_constraints.granularity != 1
+        or timing_constraints.min_length != 1
+        or timing_constraints.acquire_alignment != 1
+        or timing_constraints.pulse_alignment != 1
+    ):
+        # Run alignment analysis regardless of scheduling.
+
+        def _require_alignment(property_set):
+            return property_set["reschedule_required"]
+
+        pm3.append(
+            InstructionDurationCheck(
+                acquire_alignment=timing_constraints.acquire_alignment,
+                pulse_alignment=timing_constraints.pulse_alignment,
+            )
+        )
+        pm3.append(
+            ConstrainedReschedule(
+                acquire_alignment=timing_constraints.acquire_alignment,
+                pulse_alignment=timing_constraints.pulse_alignment,
+            ),
+            condition=_require_alignment,
+        )
+        pm3.append(
+            ValidatePulseGates(
+                granularity=timing_constraints.granularity,
+                min_length=timing_constraints.min_length,
+            )
+        )
+    if scheduling_method:
+        # Call padding pass if circuit is scheduled
+        pm3.append(PadDelay())
 
     return pm3
