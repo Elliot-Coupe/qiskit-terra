@@ -33,12 +33,12 @@ from qiskit.providers.options import Options
 from qiskit.transpiler import Target, InstructionProperties
 
 
-class FakeMumbaiFractionalCX(BackendV2):
+class FakeMumbaiV2(BackendV2):
     """A fake mumbai backend."""
 
     def __init__(self):
         super().__init__(
-            name="FakeMumbaiFractionalCX",
+            name="FakeMumbaiV2",
             description="A fake BackendV2 example based on IBM Mumbai",
             online_date=datetime.datetime.utcnow(),
             backend_version="0.0.1",

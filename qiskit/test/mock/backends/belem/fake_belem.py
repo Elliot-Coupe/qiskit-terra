@@ -15,17 +15,7 @@ Fake Belem device (5 qubit).
 """
 
 import os
-from qiskit.test.mock import fake_pulse_backend, fake_backend
-
-
-class FakeBelemV2(fake_backend.FakeBackendV2):
-    """A fake 5 qubit backend."""
-
-    dirname = os.path.dirname(__file__)
-    conf_filename = "conf_belem.json"
-    props_filename = "props_belem.json"
-    defs_filename = "defs_belem.json"
-    backend_name = "fake_belem_v2"
+from qiskit.test.mock import fake_pulse_backend
 
 
 class FakeBelem(fake_pulse_backend.FakePulseBackend):

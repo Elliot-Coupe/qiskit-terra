@@ -129,8 +129,6 @@ class RunningPassManager:
         else:
             circuit.name = name
         circuit._layout = self.property_set["layout"]
-        circuit._clbit_write_latency = self.property_set["clbit_write_latency"]
-        circuit._conditional_latency = self.property_set["conditional_latency"]
 
         return circuit
 

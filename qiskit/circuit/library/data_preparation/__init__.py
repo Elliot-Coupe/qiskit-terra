@@ -41,6 +41,9 @@ of the complete initial data.
 from .pauli_feature_map import PauliFeatureMap
 from .z_feature_map import ZFeatureMap
 from .zz_feature_map import ZZFeatureMap
-from .state_preparation import StatePreparation
 
-__all__ = ["PauliFeatureMap", "ZFeatureMap", "ZZFeatureMap", "StatePreparation"]
+__all__ = [
+    "PauliFeatureMap",
+    "ZFeatureMap",
+    "ZZFeatureMap",
+]

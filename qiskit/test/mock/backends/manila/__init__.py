@@ -12,5 +12,4 @@
 
 """Mock manila backend"""
 
-from .fake_manila import FakeManilaV2
 from .fake_manila import FakeManila

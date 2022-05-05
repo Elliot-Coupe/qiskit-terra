@@ -867,18 +867,14 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
             inds = inds[new_inds]
         return inds
 
-    def evolve(self, other, qargs=None, frame="h"):
+    def evolve(self, other, qargs=None):
         r"""Evolve the Pauli by a Clifford.
 
         This returns the Pauli :math:`P^\prime = C.P.C^\dagger`.
 
-        By choosing the parameter frame='s', this function returns the Schrödinger evolution of the Pauli
-        :math:`P^\prime = C.P.C^\dagger`. This option yields a faster calculation.
-
         Args:
             other (Pauli or Clifford or QuantumCircuit): The Clifford operator to evolve by.
             qargs (list): a list of qubits to apply the Clifford to.
-            frame (string): 'h' for Heisenberg or 's' for Schrödinger framework.
 
         Returns:
             Pauli: the Pauli :math:`C.P.C^\dagger`.
@@ -896,7 +892,7 @@ class PauliList(BasePauli, LinearMixin, GroupMixin):
             # Convert to a PauliList
             other = PauliList(other)
 
-        return PauliList(super().evolve(other, qargs=qargs, frame=frame))
+        return PauliList(super().evolve(other, qargs=qargs))
 
     def to_labels(self, array=False):
         r"""Convert a PauliList to a list Pauli string labels.

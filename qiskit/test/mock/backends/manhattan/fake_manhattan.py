@@ -15,17 +15,7 @@ Fake Manhattan device (65 qubit).
 """
 
 import os
-from qiskit.test.mock import fake_pulse_backend, fake_backend
-
-
-class FakeManhattanV2(fake_backend.FakeBackendV2):
-    """A fake Manhattan backend."""
-
-    dirname = os.path.dirname(__file__)
-    conf_filename = "conf_manhattan.json"
-    props_filename = "props_manhattan.json"
-    defs_filename = "defs_manhattan.json"
-    backend_name = "fake_manhattan_v2"
+from qiskit.test.mock import fake_pulse_backend
 
 
 class FakeManhattan(fake_pulse_backend.FakePulseBackend):

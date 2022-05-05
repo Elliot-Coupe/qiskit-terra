@@ -107,7 +107,6 @@ class ParamShift(CircuitGradient):
         Returns:
             An operator corresponding to the gradient resp. Hessian. The order is in accordance with
             the order of the given parameters.
-
         Raises:
             OpflowError: If the parameters are given in an invalid format.
 
@@ -147,7 +146,6 @@ class ParamShift(CircuitGradient):
             operator: The operator containing circuits we are taking the derivative of.
             params: The parameters (ω) we are taking the derivative with respect to. If
                     a ParameterVector is provided, each parameter will be shifted.
-
         Returns:
             param_shifted_op: An operator object which evaluates to the respective gradients.
 
@@ -287,7 +285,7 @@ class ParamShift(CircuitGradient):
             TypeError: if ``x`` is not DictStateFn, VectorStateFn or their list.
 
         """
-        # Note: In the probability gradient case, the amplitudes still need to be converted
+        # In the probability gradient case, the amplitudes still need to be converted
         # into sampling probabilities.
 
         def get_primitives(item):

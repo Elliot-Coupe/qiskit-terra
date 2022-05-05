@@ -13,7 +13,6 @@
 """Initialize qubit registers to desired arbitrary state."""
 
 from .squ import SingleQubitUnitary
-from .uc_pauli_rot import UCPauliRotGate
 from .ucrz import UCRZGate
 from .ucry import UCRYGate
 from .ucrx import UCRXGate

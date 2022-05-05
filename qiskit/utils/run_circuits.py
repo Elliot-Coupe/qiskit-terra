@@ -205,7 +205,7 @@ def _safe_submit_qobj(
     return job, job_id
 
 
-def _safe_get_job_status(job: BaseJob, job_id: str, max_job_retries: int, wait: float) -> JobStatus:
+def _safe_get_job_status(job: BaseJob, job_id: str, max_job_retries: int) -> JobStatus:
     for _ in range(max_job_retries):
         try:
             job_status = job.status()
@@ -216,7 +216,7 @@ def _safe_get_job_status(job: BaseJob, job_id: str, max_job_retries: int, wait: 
                 job_id,
                 ex,
             )
-            time.sleep(wait)
+            time.sleep(5)
         except Exception as ex:
             raise QiskitError(
                 f"job id: {job_id}, status: 'FAIL_TO_GET_STATUS' Unknown error: ({ex})"
@@ -308,9 +308,7 @@ def run_qobj(
                 logger.info("Running %s-th qobj, job id: %s", idx, job_id)
                 # try to get result if possible
                 while True:
-                    job_status = _safe_get_job_status(
-                        job, job_id, max_job_retries, qjob_config["wait"]
-                    )
+                    job_status = _safe_get_job_status(job, job_id, max_job_retries)
                     queue_position = 0
                     if job_status in JOB_FINAL_STATES:
                         # do callback again after the job is in the final states
@@ -550,7 +548,7 @@ def run_circuits(
                 # try to get result if possible
                 while True:
                     job_status = _safe_get_job_status(
-                        job, job_id, max_job_retries, qjob_config["wait"]
+                        job, job_id, max_job_retries
                     )  # if the status was broken, an Exception would be raised anyway
                     queue_position = 0
                     if job_status in JOB_FINAL_STATES:

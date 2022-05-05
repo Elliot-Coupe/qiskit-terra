@@ -973,18 +973,11 @@ def _parse_instruction_durations(backend, inst_durations, dt, circuits):
     take precedence over backend durations, but be superceded by ``inst_duration``s.
     """
     if not inst_durations:
-        backend_version = getattr(backend, "version", 0)
-        if not isinstance(backend_version, int):
-            # Legacy BaseBackend still has `version` as a method.
-            backend_version = 0
-        if backend_version <= 1:
-            backend_durations = InstructionDurations()
-            try:
-                backend_durations = InstructionDurations.from_backend(backend)
-            except AttributeError:
-                pass
-        else:
-            backend_durations = backend.instruction_durations
+        backend_durations = InstructionDurations()
+        try:
+            backend_durations = InstructionDurations.from_backend(backend)
+        except AttributeError:
+            pass
 
     durations = []
     for circ in circuits:

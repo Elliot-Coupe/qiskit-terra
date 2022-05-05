@@ -37,7 +37,7 @@ class RZGate(Gate):
 
     .. math::
 
-        RZ(\lambda) = \exp\left(-i\frac{\lambda}{2}Z\right) =
+        RZ(\lambda) = exp(-i\frac{\lambda}{2}Z) =
             \begin{pmatrix}
                 e^{-i\frac{\lambda}{2}} & 0 \\
                 0 & e^{i\frac{\lambda}{2}}

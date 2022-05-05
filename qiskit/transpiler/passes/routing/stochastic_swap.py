@@ -182,13 +182,13 @@ class StochasticSwap(TransformationPass):
 
         int_qubit_subset = np.fromiter(
             (self._qubit_indices[bit] for bit in qubit_subset),
-            dtype=np.uintp,
+            dtype=np.int32,
             count=len(qubit_subset),
         )
 
         int_gates = np.fromiter(
             (self._qubit_indices[bit] for gate in gates for bit in gate),
-            dtype=np.uintp,
+            dtype=np.int32,
             count=2 * len(gates),
         )
 
@@ -197,7 +197,7 @@ class StochasticSwap(TransformationPass):
         trial_circuit = DAGCircuit()  # SWAP circuit for slice of swaps in this trial
         trial_circuit.add_qubits(layout.get_virtual_bits())
 
-        edges = np.asarray(coupling.get_edges(), dtype=np.uintp).ravel()
+        edges = np.asarray(coupling.get_edges(), dtype=np.int32).ravel()
         cdist = coupling._dist_matrix
         for trial in range(trials):
             logger.debug("layer_permutation: trial %s", trial)
@@ -302,7 +302,7 @@ class StochasticSwap(TransformationPass):
         # qregs and cregs as the input circuit
         dagcircuit_output = None
         if not self.fake_run:
-            dagcircuit_output = circuit_graph.copy_empty_like()
+            dagcircuit_output = circuit_graph._copy_circuit_metadata()
 
         logger.debug("trivial_layout = %s", layout)
 
