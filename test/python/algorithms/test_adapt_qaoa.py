@@ -12,7 +12,7 @@
 
 """ Test AdaptQAOA """
 import unittest
-# from test.python.algorithms import QiskitAlgorithmsTestCase
+from test.python.algorithms import QiskitAlgorithmsTestCase
 
 import math
 import numpy as np
@@ -50,8 +50,7 @@ CUSTOM_SUPERPOSITION = [1 / math.sqrt(15)] * 15 + [0]
 from qiskit.test import QiskitTestCase
 
 @ddt
-# class TestAdaptQAOA(QiskitAlgorithmsTestCase):
-class TestAdaptQAOA(QiskitTestCase):
+class TestAdaptQAOA(QiskitAlgorithmsTestCase):
     """Test AdaptQAOA with MaxCut."""
 
     def setUp(self):

@@ -17,14 +17,22 @@
 import itertools
 from typing import List, Optional, Tuple, Union
 import numpy as np
-from itertools import combinations_with_replacement, permutations, product
-
-from qiskit.circuit.quantumcircuit import QuantumCircuit
-from qiskit.circuit.quantumregister import QuantumRegister
+from itertools import (
+    combinations_with_replacement,
+    permutations,
+    product
+)
+from qiskit.circuit import (
+    QuantumCircuit,
+    QuantumRegister,
+    ParameterVector
+)
+from qiskit.quantum_info import (
+    Pauli,
+    SparsePauliOp,
+    Operator
+)
 from qiskit.converters import isinstanceint
-from qiskit.opflow import PauliSumOp, PauliOp, OperatorBase, PrimitiveOp
-from qiskit.quantum_info import Pauli, SparsePauliOp, Operator
-from qiskit.circuit import ParameterVector, Parameter
 from qiskit.circuit.library.evolved_operator_ansatz import _is_pauli_identity
 from qiskit.circuit.library.n_local import QAOAAnsatz
 
@@ -80,7 +88,7 @@ def adapt_mixer_pool(
         KeyError: If an unrecognisible mixer type has been provided.
     """
     from qiskit.circuit import Parameter
-    from qiskit.opflow import I, X, Y, Z
+    from qiskit.opflow import I, X, Y, Z, PauliOp, PauliSumOp
     if pool_type:
         if pool_type == "multi":
             add_multi, add_single = True, True
@@ -166,7 +174,7 @@ class AdaptQAOAAnsatz(QAOAAnsatz):
         cost_operator=None,
         reps: int = 1,
         initial_state: Optional[QuantumCircuit] = None,
-        mixer_pool: Optional[Union[List, OperatorBase, QuantumCircuit]] = None,
+        mixer_pool: Optional[Union[List, QuantumCircuit]] = None,
         mixer_pool_type: Optional[str] = None,
         name: str = "AdaptQAOA",
     ):
@@ -231,8 +239,10 @@ class AdaptQAOAAnsatz(QAOAAnsatz):
 
     def _check_mixers(
         self, 
-        mixer_operators: Optional[Union[List, OperatorBase, QuantumCircuit]], 
+        mixer_operators: Optional[Union[List, QuantumCircuit]], 
         raise_on_failure: bool = True):
+
+        from qiskit.opflow import PrimitiveOp
 
         mixer_operators = mixer_operators if isinstance(mixer_operators, list) else [mixer_operators]
         valid = True
@@ -444,3 +454,6 @@ class AdaptQAOAAnsatz(QAOAAnsatz):
     def set_mixer_operators(self, mixer_operators):
         """User-friendly way to set mixer operators."""
         self.mixer_operators = mixer_operators
+
+if __name__ == '__main__':
+    print(1)
