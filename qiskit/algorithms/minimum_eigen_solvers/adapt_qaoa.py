@@ -18,10 +18,10 @@ import warnings
 import numpy as np
 from scipy.stats import loguniform
 
-from qiskit import QuantumCircuit
-from qiskit.circuit.library import RealAmplitudes
-from qiskit.circuit import Parameter
-from qiskit.quantum_info import Operator
+from qiskit.circuit.quantumcircuit import QuantumCircuit
+from qiskit.circuit.library.n_local import RealAmplitudes
+from qiskit.circuit.parameter import Parameter
+from qiskit.quantum_info.operators.operator import Operator
 from qiskit.opflow import (
     MatrixOp,
     PrimitiveOp,
@@ -37,8 +37,8 @@ from qiskit.algorithms.optimizers import Optimizer, COBYLA
 from qiskit.providers import Backend, BaseBackend
 from qiskit.utils.quantum_instance import QuantumInstance
 from qiskit.circuit.library.n_local.adaptqaoa_ansatz import AdaptQAOAAnsatz, commutator
-from qiskit.algorithms.minimum_eigen_solvers import QAOA
-from ..exceptions import AlgorithmError
+from .qaoa import QAOA
+from qiskit.algorithms.exceptions import AlgorithmError
 
 logger = logging.getLogger(__name__)
 
@@ -649,3 +649,5 @@ def energy_grad_operator(
         @ exp_hc
     )
     return PrimitiveOp(energy_grad_op)
+if __name__ =='__main__':
+    print(1)
