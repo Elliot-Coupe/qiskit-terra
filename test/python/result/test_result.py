@@ -191,6 +191,81 @@ class TestResultOperations(QiskitTestCase):
         self.assertEqual(marginal_counts(result, [0, 1]).get_counts(0), expected_marginal_counts_1)
         self.assertEqual(marginal_counts(result, [0]).get_counts(1), expected_marginal_counts_2)
 
+    def test_marginal_counts_result_memory(self):
+        """Test that a Result object containing memory marginalizes correctly."""
+        result = self.generate_qiskit_result()
+        marginal_result = marginal_counts(result, indices=[0])
+        marginal_memory = marginal_result.results[0].data.memory
+        self.assertEqual(marginal_memory, [hex(ii % 2) for ii in range(8)])
+
+    def test_marginal_counts_result_memory_nonzero_indices(self):
+        """Test that a Result object containing memory marginalizes correctly."""
+        result = self.generate_qiskit_result()
+        index = 2
+        marginal_result = marginal_counts(result, indices=[index])
+        marginal_memory = marginal_result.results[0].data.memory
+        mask = 1 << index
+        expected = [hex((ii & mask) >> index) for ii in range(8)]
+        self.assertEqual(marginal_memory, expected)
+
+    def test_marginal_counts_result_memory_indices_None(self):
+        """Test that a Result object containing memory marginalizes correctly."""
+        result = self.generate_qiskit_result()
+        memory = "should not be touched"
+        result.results[0].data.memory = memory
+        marginal_result = marginal_counts(result, indices=None)
+        marginal_memory = marginal_result.results[0].data.memory
+        self.assertEqual(marginal_memory, memory)
+
+    def test_marginal_counts_result_invalid_indices(self):
+        """Test that a Result object containing memory marginalizes correctly inplace."""
+
+        result = self.generate_qiskit_result()
+        with self.assertRaises(QiskitError):
+            _ = marginal_counts(result, indices=[0, 1, 100], inplace=True)
+
+    def test_marginal_counts_result_marginalize_memory(self):
+        """Test that a Result object containing memory marginalizes correctly inplace."""
+
+        result = self.generate_qiskit_result()
+        marginal_result = marginal_counts(
+            result, indices=[0], inplace=True, marginalize_memory=False
+        )
+        self.assertFalse(hasattr(marginal_result.results[0].data, "memory"))
+        result = self.generate_qiskit_result()
+        marginal_result = marginal_counts(
+            result, indices=[0], inplace=True, marginalize_memory=None
+        )
+        self.assertTrue(hasattr(marginal_result.results[0].data, "memory"))
+        result = self.generate_qiskit_result()
+        marginal_result = marginal_counts(
+            result, indices=[0], inplace=True, marginalize_memory=True
+        )
+        self.assertTrue(hasattr(marginal_result.results[0].data, "memory"))
+
+        result = self.generate_qiskit_result()
+        marginal_result = marginal_counts(
+            result, indices=[0], inplace=False, marginalize_memory=False
+        )
+        self.assertFalse(hasattr(marginal_result.results[0].data, "memory"))
+        marginal_result = marginal_counts(
+            result, indices=[0], inplace=False, marginalize_memory=None
+        )
+        self.assertTrue(hasattr(marginal_result.results[0].data, "memory"))
+        marginal_result = marginal_counts(
+            result, indices=[0], inplace=False, marginalize_memory=True
+        )
+        self.assertTrue(hasattr(marginal_result.results[0].data, "memory"))
+
+    def test_marginal_counts_result_inplace(self):
+        """Test that a Result object containing memory marginalizes correctly inplace."""
+        result = self.generate_qiskit_result()
+
+        marginal_result = marginal_counts(result, indices=[0], inplace=True)
+        self.assertEqual(id(result), id(marginal_result))
+        marginal_memory = marginal_result.results[0].data.memory
+        self.assertEqual(marginal_memory, [hex(ii % 2) for ii in range(8)])
+
     def test_marginal_counts_result_creg_sizes(self):
         """Test that marginal_counts with Result input properly changes creg_sizes."""
         raw_counts = {"0x0": 4, "0x1": 7, "0x2": 10, "0x6": 5, "0x9": 11, "0xD": 9, "0xE": 8}
