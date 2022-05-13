@@ -214,8 +214,6 @@ def level_0_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
 
     _direction = [GateDirection(coupling_map, target)]
 
-<<<<<<< HEAD
-=======
     # 7. Unify all durations (either SI, or convert to dt if known)
     # Schedule the circuit only when scheduling_method is supplied
     _time_unit_setup = [ContainsInstruction("delay")]
@@ -249,7 +247,6 @@ def level_0_pass_manager(pass_manager_config: PassManagerConfig) -> PassManager:
     else:
         _alignments = []
 
->>>>>>> 8b57d7703 (Revert "Working update")
     # Build pass manager
     pm0 = PassManager()
     if coupling_map or initial_layout:

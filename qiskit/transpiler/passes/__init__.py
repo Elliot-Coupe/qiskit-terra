@@ -136,7 +136,6 @@ Synthesis
    :toctree: ../stubs/
 
    UnitarySynthesis
-<<<<<<< HEAD
 
 Post Layout (Post transpile qubit selection)
 ============================================
@@ -145,8 +144,6 @@ Post Layout (Post transpile qubit selection)
    :toctree: ../stubs/
 
    VF2PostLayout
-=======
->>>>>>> 0018e5f8ea5a8ff60d855ca8b317a1b1e27a83da
 
 Additional Passes
 =================
@@ -249,16 +246,11 @@ from .scheduling import PadDynamicalDecoupling
 from .scheduling import DynamicalDecoupling
 from .scheduling import AlignMeasures  # Deprecated
 from .scheduling import ValidatePulseGates
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 from .scheduling import PadDelay
 from .scheduling import ConstrainedReschedule
 from .scheduling import InstructionDurationCheck
 from .scheduling import SetIOLatency
-=======
->>>>>>> 8b57d7703 (Revert "Working update")
-=======
->>>>>>> 0018e5f8ea5a8ff60d855ca8b317a1b1e27a83da
 
 # additional utility passes
 from .utils import CheckMap

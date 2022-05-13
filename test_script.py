@@ -217,47 +217,19 @@ init_pt = extend_initial_points(max_reps=max_reps)
 "--------------------------------------------------------------"
 "run adapt"
 "--------------------------------------------------------------"
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-adapt_vals_dict = {'Multi':0}#, 'Single':0, 'Singular':0}
-=======
-=======
->>>>>>> aabff2fb9 (minor changes)
 import copy
 print(f"Problem ground state energy: {gs_energy}")
 adapt_vals_dict = {'multi':0, 'single':0}#, 'singular':0}
 adapt_val_dict = copy.copy(adapt_vals_dict)
-<<<<<<< HEAD
->>>>>>> e9f020029 (change mixer pool type to lowercase)
-=======
->>>>>>> aabff2fb9 (minor changes)
+
 for mt in adapt_vals_dict.keys():
     print("Running adapt with mixer pool type {}".format(mt))
     adaptqaoa = AdaptQAOA(max_reps=max_reps, quantum_instance=quantum_instance,mixer_pool_type=mt, 
                             optimizer=optimiser, threshold=0,initial_point=init_pt)
-<<<<<<< HEAD
-    final_result, total_results = adaptqaoa.compute_minimum_eigenvalue(cost_op, iter_results = True)
-    adapt_depth = len(total_results)
-    adapt_vals_dict[mt] = [(total_results[i].optimal_value-gs_energy) for i in range(adapt_depth)]
-=======
-# import copy
-# print(f"Problem ground state energy: {gs_energy}")
-# adapt_vals_dict = {'multi':0, 'single':0}#, 'singular':0}
-# adapt_val_dict = copy.copy(adapt_vals_dict)
-# for mt in adapt_vals_dict.keys():
-#     print("Running adapt with mixer pool type {}".format(mt))
-#     adaptqaoa = AdaptQAOA(max_reps=max_reps, quantum_instance=quantum_instance,mixer_pool_type=mt, 
-#                             optimizer=optimiser, threshold=0,initial_point=init_pt)
-#     final_result, total_results = adaptqaoa.compute_minimum_eigenvalue(cost_op, iter_results = True)
-#     adapt_depth = len(total_results)
-#     adapt_vals_dict[mt] = [(total_results[i].optimal_value-gs_energy) for i in range(adapt_depth)]
->>>>>>> ccde00210 (Actually fully working. currently 7/19 failures on unittest; description is provided at the bottom of adapt_qaoa.py)
-=======
+
     final_result, total_results = adaptqaoa.compute_minimum_eigenvalue(cost_op, iter_results = True, disp = True)
     adapt_depth = len(total_results)
     adapt_vals_dict[mt] = [(total_results[i].optimal_value-gs_energy) for i in range(adapt_depth)]
->>>>>>> aabff2fb9 (minor changes)
 
 # "--------------------------------------------------------------"
 # "now run regular qaoa over the maximum number of iterations!!!!"
