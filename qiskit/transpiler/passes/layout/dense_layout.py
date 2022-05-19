@@ -42,10 +42,29 @@ class DenseLayout(AnalysisPass):
         super().__init__()
         self.coupling_map = coupling_map
         self.backend_prop = backend_prop
+
+        self.target = target
+        num_qubits = 0
+        self.adjacency_matrix = None
+        if target is not None:
+            num_qubits = target.num_qubits
+            self.coupling_map = target.build_coupling_map()
+            if self.coupling_map is not None:
+                self.adjacency_matrix = retworkx.adjacency_matrix(self.coupling_map.graph)
+            self.error_mat, self._use_error = _build_error_matrix(num_qubits, target=target)
+        else:
+            if self.coupling_map:
+                num_qubits = self.coupling_map.size()
+                self.adjacency_matrix = retworkx.adjacency_matrix(self.coupling_map.graph)
+            self.error_mat, self._use_error = _build_error_matrix(
+                num_qubits, backend_prop=self.backend_prop, coupling_map=self.coupling_map
+            )
+
         self.cx_mat = None
         self.meas_arr = None
         self.num_cx = 0
         self.num_meas = 0
+
 
     def run(self, dag):
         """Run the DenseLayout pass on `dag`.
@@ -59,11 +78,31 @@ class DenseLayout(AnalysisPass):
         Raises:
             TranspilerError: if dag wider than self.coupling_map
         """
-        from scipy.sparse import coo_matrix
 
-        num_dag_qubits = sum(qreg.size for qreg in dag.qregs.values())
+        if self.coupling_map is None:
+            raise TranspilerError(
+                "A coupling_map or target with constrained qargs is necessary to run the pass."
+            )
+        num_dag_qubits = len(dag.qubits)
+
+        # from scipy.sparse import coo_matrix
+
+        # num_dag_qubits = sum(qreg.size for qreg in dag.qregs.values())
+
         if num_dag_qubits > self.coupling_map.size():
             raise TranspilerError("Number of qubits greater than device.")
+
+
+        if self.target is not None:
+            num_cx = 1
+            num_meas = 1
+        else:
+            # Get avg number of cx and meas per qubit
+            ops = dag.count_ops()
+            if "cx" in ops.keys():
+                num_cx = ops["cx"]
+            if "measure" in ops.keys():
+                num_meas = ops["measure"]
 
         # Get avg number of cx and meas per qubit
         ops = dag.count_ops()
@@ -130,6 +169,16 @@ class DenseLayout(AnalysisPass):
         if num_qubits == 0:
             return []
 
+        rows, cols, best_map = best_subset(
+            num_qubits,
+            self.adjacency_matrix,
+            num_meas,
+            num_cx,
+            self._use_error,
+            self.coupling_map.is_symmetric,
+            self.error_mat,
+        )
+
         device_qubits = self.coupling_map.size()
 
         cmap = np.asarray(self.coupling_map.get_edges())
@@ -190,6 +239,7 @@ class DenseLayout(AnalysisPass):
         new_cmap = [[mapping[c[0]], mapping[c[1]]] for c in best_sub]
         rows = [edge[0] for edge in new_cmap]
         cols = [edge[1] for edge in new_cmap]
+
         data = [1] * len(rows)
         sp_sub_graph = coo_matrix((data, (rows, cols)), shape=(num_qubits, num_qubits)).tocsr()
         perm = csgraph.reverse_cuthill_mckee(sp_sub_graph)

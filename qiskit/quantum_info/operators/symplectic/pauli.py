@@ -22,6 +22,7 @@ import numpy as np
 
 from qiskit.circuit import Instruction, QuantumCircuit, Operation
 from qiskit.circuit.barrier import Barrier
+from qiskit.circuit.delay import Delay
 from qiskit.circuit.library.generalized_gates import PauliGate
 from qiskit.circuit.library.standard_gates import IGate, XGate, YGate, ZGate
 from qiskit.exceptions import QiskitError
@@ -677,7 +678,7 @@ class Pauli(BasePauli, Operation):
                 raise QiskitError(
                     f"Cannot apply instruction with classical registers: {dinstr.name}"
                 )
-            if not isinstance(dinstr, Barrier):
+            if not isinstance(dinstr, (Barrier, Delay)):
                 next_instr = BasePauli(*cls._from_circuit(dinstr))
                 if next_instr is not None:
                     qargs = [tup.index for tup in qregs]

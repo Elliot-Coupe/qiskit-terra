@@ -245,8 +245,7 @@ class QAOAAnsatz(EvolvedOperatorAnsatz):
         return self._cost_operator.num_qubits
 
     def _build(self):
-        """If not already built, build the circuit."""
-        if self._is_built:
+        if self._data is not None:
             return
 
         super()._build()

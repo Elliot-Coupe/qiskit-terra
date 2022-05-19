@@ -408,6 +408,29 @@ class AdaptQAOA(QAOA):
             self._ansatz = ansatz
         self._ansatz_params = list(self._ansatz.parameters)
 
+
+    @property
+    def mixer_pool(self) -> List:
+        """Creates the mixer pool if not already defined
+
+        Returns:
+            List of mixers that make up the mixer pool.
+
+        Raises:
+            AttributeError: If operator and thus num_qubits has not yet been defined.
+        """
+        return self._mixer_pool
+
+    @mixer_pool.setter
+    def mixer_pool(self, mixer_pool: List) -> None:
+        """
+        Args:
+            mixer_pool: A list of operators that define the pool of operators that
+            the eigensolver may drawn an optimal mixer solutions from.
+        """
+
+        self._mixer_pool = mixer_pool
+
     @property
     def ground_state_energy(self) -> float:
         """Returns the ground state energy of the cost operator
@@ -428,7 +451,9 @@ class AdaptQAOA(QAOA):
                 Float: Specifies the minimum value, or 'threshold' of the energy gradient
                 with respect to the mixer pool that will stop the algorithm.
             """
-        return self._threshold      
+        if self._threshold is None:
+            self._threshold = 0
+        return self._threshold
 
     @threshold.setter
     def threshold(self, threshold) -> Optional[Callable[[int, float], None]]:

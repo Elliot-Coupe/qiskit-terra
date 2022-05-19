@@ -21,10 +21,11 @@ from qiskit.transpiler import CouplingMap
 from qiskit.transpiler.basepasses import TransformationPass
 from qiskit.transpiler.exceptions import TranspilerError
 from qiskit.dagcircuit.dagcircuit import DAGCircuit
-from qiskit.extensions.quantum_initializer import isometry
 from qiskit.quantum_info.synthesis import one_qubit_decompose
 from qiskit.quantum_info.synthesis.xx_decompose import XXDecomposer
 from qiskit.quantum_info.synthesis.two_qubit_decompose import TwoQubitBasisDecomposer
+from qiskit.quantum_info.synthesis.qsd import qs_decomposition
+from qiskit.circuit.parameter import Parameter
 from qiskit.circuit.library.standard_gates import (
     iSwapGate,
     CXGate,
@@ -393,7 +394,7 @@ class DefaultUnitarySynthesis(plugin.UnitarySynthesisPlugin):
                 pulse_optimize,
             )
         else:
-            synth_dag = circuit_to_dag(isometry.Isometry(unitary, 0, 0).definition)
+            synth_dag = circuit_to_dag(qs_decomposition(unitary))
 
         return synth_dag, wires
 
