@@ -91,6 +91,7 @@ z3_requirements = [
     "z3-solver>=4.7",
 ]
 bip_requirements = ["cplex", "docplex"]
+csp_requirements = ["python-constraint>=1.4"]
 
 
 setup(
@@ -128,10 +129,11 @@ setup(
         "visualization": visualization_extras,
         "bip-mapper": bip_requirements,
         "crosstalk-pass": z3_requirements,
+        "csp-layout-pass": csp_requirements,
         # Note: 'all' does not include 'bip-mapper' because cplex is too fiddly and too little
         # supported on various Python versions and OSes compared to Terra.  You have to ask for it
         # explicitly.
-        "all": visualization_extras + z3_requirements,
+        "all": visualization_extras + z3_requirements + csp_requirements,
     },
     project_urls={
         "Bug Tracker": "https://github.com/Qiskit/qiskit-terra/issues",
