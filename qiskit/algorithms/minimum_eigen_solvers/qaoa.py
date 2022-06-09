@@ -15,7 +15,7 @@
 from typing import List, Callable, Optional, Union
 import numpy as np
 
-from qiskit.algorithms.optimizers import Optimizer
+from qiskit.algorithms.optimizers import Minimizer, Optimizer
 from qiskit.circuit import QuantumCircuit
 from qiskit.opflow import OperatorBase, ExpectationBase
 from qiskit.opflow.gradients import GradientBase
@@ -54,7 +54,7 @@ class QAOA(VQE):
 
     def __init__(
         self,
-        optimizer: Optimizer = None,
+        optimizer: Optional[Union[Optimizer, Minimizer]] = None,
         reps: int = 1,
         initial_state: Optional[QuantumCircuit] = None,
         mixer: Union[QuantumCircuit, OperatorBase] = None,

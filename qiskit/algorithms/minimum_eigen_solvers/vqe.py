@@ -15,34 +15,39 @@
 See https://arxiv.org/abs/1304.3061
 """
 
-from typing import Optional, List, Callable, Union, Dict, Tuple
+from __future__ import annotations
+
 import logging
-import warnings
 from time import time
+from typing import Callable, Dict, List, Optional, Tuple, Union
+import warnings
+
 import numpy as np
 
-from qiskit.circuit import QuantumCircuit, Parameter
+from qiskit.circuit import Parameter, QuantumCircuit
 from qiskit.circuit.library import RealAmplitudes
-from qiskit.providers import Backend
 from qiskit.opflow import (
-    OperatorBase,
+    CircuitSampler,
+    CircuitStateFn,
     ExpectationBase,
     ExpectationFactory,
-    StateFn,
-    CircuitStateFn,
     ListOp,
-    CircuitSampler,
+    OperatorBase,
     PauliSumOp,
+    StateFn,
 )
 from qiskit.opflow.gradients import GradientBase
-from qiskit.utils.validation import validate_min
-from qiskit.utils.backend_utils import is_aer_provider
-from qiskit.utils.deprecation import deprecate_function
+from qiskit.providers import Backend
 from qiskit.utils import QuantumInstance, algorithm_globals
-from ..optimizers import Optimizer, SLSQP
-from ..variational_algorithm import VariationalAlgorithm, VariationalResult
-from .minimum_eigen_solver import MinimumEigensolver, MinimumEigensolverResult, ListOrDict
+from qiskit.utils.backend_utils import is_aer_provider
+from qiskit.utils.validation import validate_min
+
+from ..aux_ops_evaluator import eval_observables
 from ..exceptions import AlgorithmError
+from ..list_or_dict import ListOrDict
+from ..optimizers import SLSQP, Minimizer, Optimizer
+from ..variational_algorithm import VariationalAlgorithm, VariationalResult
+from .minimum_eigen_solver import MinimumEigensolver, MinimumEigensolverResult
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +90,7 @@ class VQE(VariationalAlgorithm, MinimumEigensolver):
     def __init__(
         self,
         ansatz: Optional[QuantumCircuit] = None,
-        optimizer: Optional[Optimizer] = None,
+        optimizer: Optional[Union[Optimizer, Minimizer]] = None,
         initial_point: Optional[np.ndarray] = None,
         gradient: Optional[Union[GradientBase, Callable]] = None,
         expectation: Optional[ExpectationBase] = None,
