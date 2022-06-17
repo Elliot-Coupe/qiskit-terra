@@ -229,6 +229,36 @@ Please see the [Installing Qiskit Terra from
 Source](https://qiskit.org/documentation/contributing_to_qiskit.html#installing-terra-from-source)
 section of the Qiskit documentation.
 
+Qiskit Terra is primarily written in Python but there are some core routines
+that are written in the [Rust](https://www.rust-lang.org/) programming
+language to improve the runtime performance. For the released versions of
+qiskit-terra we publish precompiled binaries on the
+[Python Package Index](https://pypi.org/) for all the supported platforms
+which only requires a functional Python environment to install. However, when
+building and installing from source you will need a rust compiler installed. You can do this very easily
+using rustup: https://rustup.rs/ which provides a single tool to install and
+configure the latest version of the rust compiler.
+[Other installation methods](https://forge.rust-lang.org/infra/other-installation-methods.html)
+exist too. For windows users besides rustup you will also need install
+the Visual C++ build tools so that rust can link against the system c/c++
+libraries. You can see more details on this in the
+[rustup documentation](https://rust-lang.github.io/rustup/installation/windows.html).
+
+Qiskit Terra has a minimum supported Rust version (MSRV) of 1.56.1. This means
+to build Qiskit Terra from source you must have at least rustc version 1.56.1
+installed, older versions will not be able to compile Qiskit.
+
+Once you have a rust compiler installed you can rely on the normal Python
+build/install steps to install Qiskit Terra. This means you just run
+`pip install .` in your local git clone to build and install Qiskit Terra.
+
+Do note that if you do use develop mode/editable install (via `python setup.py develop` or `pip install -e .`) the Rust extension will be built in debug mode
+without any optimizations enabled. This will result in poor runtime performance.
+If you'd like to use an editable install with an optimized binary you can
+run `python setup.py build_rust --release --inplace` after you install in
+editable mode to recompile the rust extensions in release mode.
+
+
 ## Test
 
 Once you've made a code change, it is important to verify that your change
