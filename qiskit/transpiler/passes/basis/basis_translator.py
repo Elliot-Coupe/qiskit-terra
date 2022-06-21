@@ -350,7 +350,90 @@ class StopIfBasisRewritable(Exception):
     """Custom exception that signals `retworkx.dijkstra_search` to stop."""
 
 
-def _basis_search(equiv_lib, source_basis, target_basis, heuristic):
+class BasisSearchVisitor(retworkx.visit.DijkstraVisitor):
+    """Handles events emitted during `retworkx.dijkstra_search`."""
+
+    def __init__(self, graph, source_basis, target_basis, num_gates_for_rule):
+        self.graph = graph
+        self.target_basis = set(target_basis)
+        self._source_gates_remain = set(source_basis)
+        self._num_gates_remain_for_rule = dict(num_gates_for_rule)
+        self._basis_transforms = []
+        self._predecessors = dict()
+        self._opt_cost_map = dict()
+
+    def discover_vertex(self, v, score):
+        gate = self.graph[v]
+        self._source_gates_remain.discard(gate)
+        self._opt_cost_map[gate] = score
+        rule = self._predecessors.get(gate, None)
+        if rule is not None:
+            logger.debug(
+                "Gate %s generated using rule \n%s\n with total cost of %s.",
+                gate.name,
+                rule.circuit,
+                score,
+            )
+            self._basis_transforms.append((gate.name, gate.num_qubits, rule.params, rule.circuit))
+        # we can stop the search if we have found all gates in the original ciruit.
+        if not self._source_gates_remain:
+            # if we start from source gates and apply `basis_transforms` in reverse order, we'll end
+            # up with gates in the target basis. Note though that `basis_transforms` may include
+            # additional transformations that are not required to map our source gates to the given
+            # target basis.
+            self._basis_transforms.reverse()
+            raise StopIfBasisRewritable
+
+    def examine_edge(self, edge):
+        _, target, edata = edge
+        if edata is None:
+            return
+
+        index = edata["index"]
+        self._num_gates_remain_for_rule[index] -= 1
+
+        target = self.graph[target]
+        # if there are gates in this `rule` that we have not yet generated, we can't apply
+        # this `rule`. if `target` is already in basis, it's not beneficial to use this rule.
+        if self._num_gates_remain_for_rule[index] > 0 or target in self.target_basis:
+            raise retworkx.visit.PruneSearch
+
+    def edge_relaxed(self, edge):
+        _, target, edata = edge
+        if edata is not None:
+            gate = self.graph[target]
+            self._predecessors[gate] = edata["rule"]
+
+    def edge_cost(self, edge):
+        """Returns the cost of an edge.
+
+        This function computes the cost of this edge rule by summing
+        the costs of all gates in the rule equivalence circuit. In the
+        end, we need to subtract the cost of the source since `dijkstra`
+        will later add it.
+        """
+
+        if edge is None:
+            # the target of the edge is a gate in the target basis,
+            # so we return a default value of 1.
+            return 1
+
+        cost_tot = 0
+        rule = edge["rule"]
+        for instruction in rule.circuit:
+            key = Key(name=instruction.operation.name, num_qubits=len(instruction.qubits))
+            cost_tot += self._opt_cost_map[key]
+
+        source = edge["source"]
+        return cost_tot - self._opt_cost_map[source]
+
+    @property
+    def basis_transforms(self):
+        """Returns the gate basis transforms."""
+        return self._basis_transforms
+
+
+def _basis_search(equiv_lib, source_basis, target_basis):
     """Search for a set of transformations from source_basis to target_basis.
 
     Args:
@@ -418,18 +501,17 @@ def _basis_search(equiv_lib, source_basis, target_basis, heuristic):
                 logger.debug("%s/%s => %s\n%s", gate_name, gate_num_qubits, params, equiv)
             return rtn
 
-        logger.debug("Inspecting basis %s.", current_basis)
-        open_set.remove(current_basis)
-        closed_set.add(current_basis)
-
-        for gate_name, gate_num_qubits in current_basis:
-            if gate_name in target_basis:
-                continue
-
-            equivs = equiv_lib._get_equivalences((gate_name, gate_num_qubits))
-
-            basis_remain = current_basis - {(gate_name, gate_num_qubits)}
-            neighbors = [
+    rcounter = 0  # running sum of the number of equivalence rules in the library.
+    for key in equiv_lib._get_all_keys():
+        target = lazy_setdefault(key)
+        all_gates_in_lib.add(key)
+        for equiv in equiv_lib._get_equivalences(key):
+            sources = {
+                Key(name=instruction.operation.name, num_qubits=len(instruction.qubits))
+                for instruction in equiv.circuit
+            }
+            all_gates_in_lib |= sources
+            edges = [
                 (
                     frozenset(
                         basis_remain

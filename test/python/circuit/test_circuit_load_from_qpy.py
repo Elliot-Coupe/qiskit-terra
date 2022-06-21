@@ -384,7 +384,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_opaque_gate_with_label(self):
         """Test that custom opaque gate is correctly serialized with a label"""
@@ -397,7 +399,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_opaque_instruction_with_label(self):
         """Test that custom opaque instruction is correctly serialized with a label"""
@@ -410,7 +414,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_custom_gate_with_label(self):
         """Test that custom  gate is correctly serialized with a label"""
@@ -430,7 +436,9 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
         self.assertEqual(qc.decompose(), new_circ.decompose())
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_custom_instruction_with_label(self):
         """Test that custom instruction is correctly serialized with a label"""
@@ -449,7 +457,9 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
         self.assertEqual(qc.decompose(), new_circ.decompose())
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_custom_gate_with_noop_definition(self):
         """Test that a custom gate whose definition contains no elements is serialized with a
@@ -470,8 +480,8 @@ class TestLoadFromQPY(QiskitTestCase):
         self.assertEqual(qc, new_circ)
         self.assertEqual(qc.decompose(), new_circ.decompose())
         self.assertEqual(len(new_circ), 2)
-        self.assertIsInstance(new_circ.data[0][0].definition, QuantumCircuit)
-        self.assertIs(new_circ.data[1][0].definition, None)
+        self.assertIsInstance(new_circ.data[0].operation.definition, QuantumCircuit)
+        self.assertIs(new_circ.data[1].operation.definition, None)
 
     def test_custom_instruction_with_noop_definition(self):
         """Test that a custom instruction whose definition contains no elements is serialized with a
@@ -492,8 +502,8 @@ class TestLoadFromQPY(QiskitTestCase):
         self.assertEqual(qc, new_circ)
         self.assertEqual(qc.decompose(), new_circ.decompose())
         self.assertEqual(len(new_circ), 2)
-        self.assertIsInstance(new_circ.data[0][0].definition, QuantumCircuit)
-        self.assertIs(new_circ.data[1][0].definition, None)
+        self.assertIsInstance(new_circ.data[0].operation.definition, QuantumCircuit)
+        self.assertIs(new_circ.data[1].operation.definition, None)
 
     def test_standard_gate_with_label(self):
         """Test a standard gate with a label."""
@@ -506,7 +516,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_circuit_with_conditional_with_label(self):
         """Test that instructions with conditions are correctly serialized."""
@@ -519,7 +531,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_initialize_qft(self):
         """Test that initialize with a complex statevector and qft work."""
@@ -547,7 +561,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_single_bit_teleportation(self):
         """Test a teleportation circuit with single bit conditions."""
@@ -563,7 +579,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_qaoa(self):
         """Test loading a QAOA circuit works."""
@@ -574,7 +592,9 @@ class TestLoadFromQPY(QiskitTestCase):
         qpy_file.seek(0)
         new_circ = load(qpy_file)[0]
         self.assertEqual(qaoa, new_circ)
-        self.assertEqual([x[0].label for x in qaoa.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qaoa.data], [x.operation.label for x in new_circ.data]
+        )
 
     def test_evolutiongate(self):
         """Test loading a circuit with evolution gate works."""
@@ -588,9 +608,11 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
 
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
-        new_evo = new_circ.data[0][0]
+        new_evo = new_circ.data[0].operation
         self.assertIsInstance(new_evo, PauliEvolutionGate)
 
     def test_evolutiongate_param_time(self):
@@ -606,9 +628,11 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
 
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
-        new_evo = new_circ.data[0][0]
+        new_evo = new_circ.data[0].operation
         self.assertIsInstance(new_evo, PauliEvolutionGate)
 
     def test_evolutiongate_param_expr_time(self):
@@ -624,9 +648,11 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
 
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
-        new_evo = new_circ.data[0][0]
+        new_evo = new_circ.data[0].operation
         self.assertIsInstance(new_evo, PauliEvolutionGate)
 
     def test_evolutiongate_param_vec_time(self):
@@ -642,9 +668,11 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
 
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
-        new_evo = new_circ.data[0][0]
+        new_evo = new_circ.data[0].operation
         self.assertIsInstance(new_evo, PauliEvolutionGate)
 
     def test_op_list_evolutiongate(self):
@@ -658,9 +686,11 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
 
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
-        new_evo = new_circ.data[0][0]
+        new_evo = new_circ.data[0].operation
         self.assertIsInstance(new_evo, PauliEvolutionGate)
 
     def test_op_evolution_gate_suzuki_trotter(self):
@@ -675,9 +705,11 @@ class TestLoadFromQPY(QiskitTestCase):
         new_circ = load(qpy_file)[0]
 
         self.assertEqual(qc, new_circ)
-        self.assertEqual([x[0].label for x in qc.data], [x[0].label for x in new_circ.data])
+        self.assertEqual(
+            [x.operation.label for x in qc.data], [x.operation.label for x in new_circ.data]
+        )
 
-        new_evo = new_circ.data[0][0]
+        new_evo = new_circ.data[0].operation
         self.assertIsInstance(new_evo, PauliEvolutionGate)
 
     def test_parameter_expression_global_phase(self):
