@@ -112,7 +112,7 @@ class ConsolidateBlocks(TransformationPass):
         # If 1q runs are collected before consolidate those too
         runs = self.property_set["run_list"] or []
         for run in runs:
-            if run[0] in all_block_gates:
+            if any(gate in all_block_gates for gate in run):
                 continue
             if len(run) == 1 and self.basis_gates and run[0].name not in self.basis_gates:
                 dag.substitute_node(run[0], UnitaryGate(run[0].op.to_matrix()))
@@ -128,6 +128,11 @@ class ConsolidateBlocks(TransformationPass):
                     continue
                 unitary = UnitaryGate(operator)
                 dag.replace_block_with_op(run, unitary, {qubit: 0}, cycle_check=False)
+        # Clear collected blocks and runs as they are no longer valid after consolidation
+        if "run_list" in self.property_set:
+            del self.property_set["run_list"]
+        if "block_list" in self.property_set:
+            del self.property_set["block_list"]
         return dag
 
     def _block_qargs_to_indices(self, block_qargs, global_index_map):
