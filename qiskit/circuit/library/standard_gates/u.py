@@ -25,12 +25,6 @@ from qiskit.circuit.exceptions import CircuitError
 class UGate(Gate):
     r"""Generic single-qubit rotation gate with 3 Euler angles.
 
-    Implemented using two X90 pulses on IBM Quantum systems:
-
-    .. math::
-        U(\theta, \phi, \lambda) =
-            RZ(\phi - \pi/2) RX(\pi/2) RZ(\pi - \theta) RX(\pi/2) RZ(\lambda - \pi/2)
-
     **Circuit symbol:**
 
     .. parsed-literal::
@@ -50,6 +44,14 @@ class UGate(Gate):
                 \cos\left(\th\right)          & -e^{i\lambda}\sin\left(\th\right) \\
                 e^{i\phi}\sin\left(\th\right) & e^{i(\phi+\lambda)}\cos\left(\th\right)
             \end{pmatrix}
+
+    .. note::
+
+        The matrix representation shown here is the same as in the `OpenQASM 3.0 specification
+        <https://openqasm.com/language/gates.html#built-in-gates>`_,
+        which differs from the `OpenQASM 2.0 specification
+        <https://doi.org/10.48550/arXiv.1707.03429>`_ by a global phase of
+        :math:`e^{i(\phi+\lambda)/2}`.
 
     **Examples:**
 
@@ -112,13 +114,12 @@ class UGate(Gate):
     def __array__(self, dtype=complex):
         """Return a numpy.array for the U gate."""
         theta, phi, lam = (float(param) for param in self.params)
+        cos = math.cos(theta / 2)
+        sin = math.sin(theta / 2)
         return numpy.array(
             [
-                [math.cos(theta / 2), -exp(1j * lam) * math.sin(theta / 2)],
-                [
-                    exp(1j * phi) * math.sin(theta / 2),
-                    exp(1j * (phi + lam)) * math.cos(theta / 2),
-                ],
+                [cos, -exp(1j * lam) * sin],
+                [exp(1j * phi) * sin, exp(1j * (phi + lam)) * cos],
             ],
             dtype=dtype,
         )
