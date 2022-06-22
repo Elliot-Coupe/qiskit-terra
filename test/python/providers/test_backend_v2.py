@@ -165,3 +165,8 @@ class TestBackendV2(QiskitTestCase):
         expected.measure(qr[0], cr[0])
         expected.measure(qr[1], cr[1])
         self.assertEqual(expected, tqc)
+
+    def test_transpile_parse_inst_map(self):
+        """Test that transpiler._parse_inst_map() supports BackendV2."""
+        inst_map = _parse_inst_map(inst_map=None, backend=self.backend)
+        self.assertIsInstance(inst_map, InstructionScheduleMap)
