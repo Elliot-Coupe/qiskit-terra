@@ -18,6 +18,7 @@ from qiskit.transpiler import PassManager
 from qiskit.transpiler.passes import BasisTranslator
 from qiskit.transpiler.passes import GatesInBasis
 from qiskit.test import QiskitTestCase
+from qiskit.providers.fake_provider.fake_backend_v2 import FakeBackend5QV2
 
 
 class TestGatesInBasisPass(QiskitTestCase):

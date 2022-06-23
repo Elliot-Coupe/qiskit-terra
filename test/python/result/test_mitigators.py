@@ -29,8 +29,9 @@ from qiskit.result.mitigation.utils import (
     expval_with_stddev,
     stddev,
 )
-from qiskit.test.mock import FakeYorktown
-from qiskit.quantum_info.operators.predicates import matrix_equal
+from qiskit.result.utils import marginal_counts
+from qiskit.test import QiskitTestCase
+from qiskit.providers.fake_provider import FakeYorktown
 
 
 @ddt

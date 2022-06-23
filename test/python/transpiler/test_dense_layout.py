@@ -19,7 +19,7 @@ from qiskit.transpiler import CouplingMap
 from qiskit.transpiler.passes import DenseLayout
 from qiskit.converters import circuit_to_dag
 from qiskit.test import QiskitTestCase
-from qiskit.test.mock import FakeTokyo
+from qiskit.providers.fake_provider import FakeTokyo
 
 
 class TestDenseLayout(QiskitTestCase):

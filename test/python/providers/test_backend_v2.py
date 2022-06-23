@@ -22,8 +22,13 @@ from ddt import ddt, data
 from qiskit.circuit import QuantumCircuit, ClassicalRegister, QuantumRegister
 from qiskit.compiler import transpile
 from qiskit.test.base import QiskitTestCase
-from qiskit.test.mock.fake_backend_v2 import FakeBackendV2, FakeBackend5QV2
-from qiskit.test.mock.fake_mumbai_v2 import FakeMumbaiV2
+from qiskit.providers.fake_provider import FakeMumbaiFractionalCX
+from qiskit.providers.fake_provider.fake_backend_v2 import (
+    FakeBackendV2,
+    FakeBackend5QV2,
+    FakeBackendSimple,
+    FakeBackendV2LegacyQubitProps,
+)
 from qiskit.quantum_info import Operator
 
 
